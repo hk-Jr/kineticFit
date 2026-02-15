@@ -6,6 +6,7 @@ const KineticNavbar = () => {
   return (
     <nav className="navbar-wrapper fixed-top d-flex justify-content-center w-100">
       <div className="inner-container d-flex align-items-center w-100 px-4">
+        {/* Added text-decoration-none and brand-logo class */}
         <Link to="/" className="brand-logo me-4 text-decoration-none">
           <span className="logo-text">
             Kinetic<span>Fit</span>
@@ -23,7 +24,6 @@ const KineticNavbar = () => {
           </div>
 
           <div className="d-flex align-items-center pe-1">
-            {/* These must match the 'path' in App.jsx */}
             <Link to="/login" className="login-btn text-decoration-none me-4">
               Login <span className="arrow-icon">↗</span>
             </Link>
