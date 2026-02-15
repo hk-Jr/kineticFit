@@ -1,0 +1,105 @@
+.dashboard-container {
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+/* --- HERO SECTION --- */
+.dashboard-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-bottom: 4px solid #3b82f6;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border: 3px solid rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.heatmap-wrapper {
+  overflow: hidden;
+}
+
+/* Heatmap Styling */
+.react-calendar-heatmap .color-empty {
+  fill: #e2e8f0;
+}
+.react-calendar-heatmap .color-scale-green {
+  fill: #22c55e;
+} /* GitHub style green */
+
+.streak-badge-mini {
+  background: rgba(255, 188, 0, 0.1);
+  padding: 4px 12px;
+  border-radius: 50px;
+  color: #f59e0b;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* --- ORIGINAL STYLES REFINED --- */
+.welcome-box {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 20px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+}
+
+.summary-card-mini .progress-circle-mini {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 10px 20px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.tiny-text {
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.action-card {
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border-color: #3b82f6;
+}
+
+.icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.workout .icon-box {
+  background: #3b82f6;
+}
+.diet .icon-box {
+  background: #10b981;
+}
+
+.btn-action {
+  background: #0f172a;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 15px;
+}
+
+.summary-section {
+  border: 1px solid #e2e8f0;
+}

@@ -1,0 +1,87 @@
+/* --- FOOTER STYLING --- */
+.footer-section {
+  background-color: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  font-family: "Inter", sans-serif;
+}
+
+.footer-logo {
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.footer-logo span {
+  color: #007bff;
+}
+
+.footer-links li {
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.footer-links li:hover {
+  color: #007bff;
+}
+
+.social-icon {
+  color: #6c757d;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    color 0.2s;
+}
+
+.social-icon:hover {
+  color: #007bff;
+  transform: translateY(-3px);
+}
+
+.athlete-tagline {
+  font-size: 15px;
+  color: #0d1117;
+  letter-spacing: 0.5px;
+}
+
+.heart {
+  color: #ff4d4d;
+  display: inline-block;
+  animation: heartbeat 1.5s infinite;
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* --- THE FIX FOR YOUR LANDING PAGE --- */
+.landing-container {
+  /* This prevents the fixed navbar from overlapping your Hero content */
+  padding-top: 100px;
+}
+
+/* Specific button polish for your btn-main in landing page */
+.btn-main {
+  background-color: #0d1117;
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-main:hover {
+  background-color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}

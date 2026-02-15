@@ -1,0 +1,50 @@
+.auth-container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+}
+
+.auth-card {
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef2f6;
+}
+
+.brand-logo {
+  font-weight: 800;
+}
+.brand-logo span {
+  color: #007bff;
+}
+
+.custom-input {
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  background-color: #fcfdfe;
+}
+
+.btn-auth-main {
+  background-color: #0d1117;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-auth-main:hover {
+  background-color: #000;
+}
+.blue-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 600;
+}
