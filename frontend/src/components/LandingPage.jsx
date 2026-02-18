@@ -14,69 +14,75 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="landing-container">
+    <div className="landing-page-root">
+      {/* --- Subtle Background Animations --- */}
+      <div className="bg-animations">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="blob blob-3"></div>
+      </div>
+
       {/* Hero Section */}
       <section className="hero-section text-center">
-        <div className="container">
-          <div className="badge-pill mb-4">Version 2.1.13 - LIVE</div>
+        <div className="container position-relative">
+          <div className="version-badge mb-4">SYSTEM V1.0 // LIVE</div>
 
-          <h1 className="hero-title fw-black">
+          <h1 className="hero-main-title fw-black">
             PERFECT FORM. <br />
-            <span className="blue-text">ZERO GUESSWORK.</span>
+            <span className="text-blue-accent">ZERO GUESSWORK.</span>
           </h1>
 
-          <p className="hero-subtitle mx-auto opacity-75">
+          <p className="hero-description mx-auto">
             KineticFit leverages edge-computing AI to validate biomechanics in
             real-time. The only protocol merging computer vision with
             nutritional precision.
           </p>
 
-          {/* Action Buttons Container */}
-          <div className="hero-actions d-flex justify-content-center gap-3">
-            <button className="btn-main" onClick={() => navigate("/signup")}>
+          <div className="hero-btn-group d-flex justify-content-center gap-3">
+            <button
+              className="btn-solid-dark"
+              onClick={() => navigate("/signup")}
+            >
               START TRAINING <ArrowRight size={16} className="ms-2" />
             </button>
-            <button className="btn-secondary-light">EXPLORE SPECS</button>
+            <button className="btn-outline-light">EXPLORE SPECS</button>
           </div>
 
-          {/* Privacy Trust Section - Fixed spacing wrapper */}
-          <div className="privacy-section-wrapper">
-            <div className="privacy-pill-container">
-              <div className="privacy-pill-item">
-                <EyeOff size={18} className="text-primary" />
-                <span className="fw-black tracking-wider">
-                  Camera stays <span className="text-primary">Offline</span>
+          <div className="trust-pills-wrapper">
+            <div className="privacy-pill-bar">
+              <div className="privacy-item">
+                <EyeOff size={18} className="icon-blue" />
+                <span className="pill-text">
+                  Camera stays <span className="icon-blue">Offline</span>
                 </span>
               </div>
-              <div className="pill-divider"></div>
-              <div className="privacy-pill-item">
-                <Lock size={18} className="text-primary" />
-                <span className="fw-black tracking-wider">
-                  <span className="text-primary">Edge</span> Computing
+              <div className="vertical-divider"></div>
+              <div className="privacy-item">
+                <Lock size={18} className="icon-blue" />
+                <span className="pill-text">
+                  <span className="icon-blue">Edge</span> Computing
                 </span>
               </div>
-              <div className="pill-divider"></div>
-              <div className="privacy-pill-item">
-                <ShieldCheck size={18} className="text-primary" />
-                <span className="fw-black tracking-wider">
-                  No Data <span className="text-primary">In-Transit</span>
+              <div className="vertical-divider"></div>
+              <div className="privacy-item">
+                <ShieldCheck size={18} className="icon-blue" />
+                <span className="pill-text">
+                  No Data <span className="icon-blue">In-Transit</span>
                 </span>
               </div>
             </div>
-            <p className="mt-3 text-muted x-small fw-bold tracking-wider pulse-text">
-              <Activity size={12} className="me-1 text-primary" /> REAL-TIME
-              LOCAL BIOMETRICS
+            <p className="biometrics-tag mt-4 pulse-anim">
+              <Activity size={12} className="me-1 icon-blue" /> REAL-TIME LOCAL
+              BIOMETRICS
             </p>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="features-section py-5">
+      <section className="core-features-section py-5">
         <div className="container">
-          <h2 className="section-label fw-black tracking-wider mb-5">
-            CORE SYSTEMS
-          </h2>
+          <h2 className="core-systems-heading fw-black mb-5">CORE SYSTEMS</h2>
           <div className="row g-4">
             <FeatureCard
               icon={<Zap size={24} color="#007bff" />}
@@ -102,17 +108,10 @@ const LandingPage = () => {
 
 const FeatureCard = ({ icon, title, desc }) => (
   <div className="col-md-4">
-    <div className="f-card p-4 h-100 border border-light shadow-sm rounded-4 bg-white">
-      <div className="f-icon mb-3 bg-light d-inline-flex p-3 rounded-3">
-        {icon}
-      </div>
-      <h6
-        className="fw-black tracking-wider mb-2 text-dark"
-        style={{ fontSize: "13px" }}
-      >
-        {title}
-      </h6>
-      <p className="text-muted small mb-0 fw-medium">{desc}</p>
+    <div className="feature-card-item">
+      <div className="icon-box mb-3">{icon}</div>
+      <h6 className="feature-card-title">{title}</h6>
+      <p className="feature-card-desc">{desc}</p>
     </div>
   </div>
 );

@@ -1,47 +1,48 @@
-/* FIXED HEADER FIX */
+/* --- Wrapper Fix --- */
 .navbar-wrapper {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  padding: 20px 0;
-  z-index: 1050;
-  background: transparent;
+  padding: 25px 0;
+  z-index: 2000;
+  background: transparent; /* Wrapper must be transparent for glass effect */
+  display: flex;
+  justify-content: center;
 }
 
 .inner-container {
-  max-width: 1100px;
+  max-width: 1200px;
 }
 
-/* THE PILL WITH BLUR EFFECT */
-.pill-nav {
-  background-color: rgba(241, 244, 249, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+/* --- Glassmorphic Pill --- */
+.pill-nav-glass {
+  background: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
+  backdrop-filter: blur(12px) saturate(180%); /* Core Glassmorphism */
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4); /* Light border for shine */
   border-radius: 100px;
   padding: 8px 8px 8px 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); /* Soft depth shadow */
 }
 
-/* --- LOGO STYLING --- */
+/* --- Logo Styling --- */
 .brand-logo {
   text-decoration: none !important;
 }
 
 .logo-text {
-  font-size: 24px; /* Increased size slightly for impact */
-  font-weight: 900; /* Extra bold for technical feel */
-  letter-spacing: -1.5px;
-  color: #1a1a1a !important; /* "Kinetic" is now Dark */
-  white-space: nowrap;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -1.2px;
+  color: #1a1a1a !important; /* Kinetic Dark */
 }
 
 .logo-text span {
-  color: #007bff !important; /* "Fit" is now Blue (Matching Hero) */
+  color: #007bff !important; /* Fit Blue */
 }
 
-/* LINKS */
+/* --- Nav Links --- */
 .nav-list .nav-link-item,
 .nav-item-simple {
   font-size: 14px;
@@ -51,12 +52,6 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  list-style: none;
-}
-
-.nav-item-simple:hover,
-.nav-link-item:hover {
-  color: #000;
 }
 
 .status-dot {
@@ -67,26 +62,24 @@
   margin-right: 8px;
 }
 
-/* BUTTONS */
+/* --- Actions --- */
 .login-btn {
   font-size: 14px;
   font-weight: 600;
-  color: #4a5568;
+  color: #1a1a1a;
 }
 
 .cta-button {
-  background-color: #0b0f1a;
+  background-color: #1a1a1a;
   color: white;
   border: none;
-  border-radius: 16px;
-  padding: 10px 22px;
+  border-radius: 50px;
+  padding: 10px 24px;
   font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  transition: transform 0.2s ease;
 }
 
 .cta-button:hover {
-  background-color: #000;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.03);
 }

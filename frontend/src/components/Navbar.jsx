@@ -6,14 +6,13 @@ const KineticNavbar = () => {
   return (
     <nav className="navbar-wrapper fixed-top d-flex justify-content-center w-100">
       <div className="inner-container d-flex align-items-center w-100 px-4">
-        {/* Added text-decoration-none and brand-logo class */}
         <Link to="/" className="brand-logo me-4 text-decoration-none">
           <span className="logo-text">
             Kinetic<span>Fit</span>
           </span>
         </Link>
 
-        <div className="pill-nav d-flex align-items-center justify-content-between flex-grow-1">
+        <div className="pill-nav-glass d-flex align-items-center justify-content-between flex-grow-1">
           <div className="d-flex align-items-center ps-3">
             <ul className="nav-list d-flex list-unstyled mb-0">
               <li className="nav-link-item active">
