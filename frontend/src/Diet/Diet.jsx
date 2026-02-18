@@ -1,56 +1,47 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Add this for routing
+import { useNavigate } from "react-router-dom";
 import {
   PlusCircle,
   Search,
-  Utensils,
   Trash2,
   CheckCircle,
+  Flame,
+  Plus,
 } from "lucide-react";
 import "./Diet.css";
 
-const FOOD_DB = [
-  {
-    name: "Chicken Breast (100g)",
-    calories: 165,
-    protein: 31,
-    carbs: 0,
-    fat: 3.6,
-  },
-  {
-    name: "White Rice (100g)",
-    calories: 130,
-    protein: 2.7,
-    carbs: 28,
-    fat: 0.3,
-  },
-  { name: "Turkey Roast (100g)", calories: 189, protein: 29, carbs: 0, fat: 7 },
-  {
-    name: "Sweet Potato (100g)",
-    calories: 86,
-    protein: 1.6,
-    carbs: 20,
-    fat: 0.1,
-  },
-  { name: "Protein Shake", calories: 120, protein: 24, carbs: 3, fat: 1.5 },
-  { name: "Egg (Large)", calories: 70, protein: 6, carbs: 0.5, fat: 5 },
-  {
-    name: "Christmas Cake (Slice)",
-    calories: 350,
-    protein: 3,
-    carbs: 55,
-    fat: 12,
-  },
+const VEG_DB = [
+  { name: "Paneer Tikka (100g)", calories: 265 },
+  { name: "Dal Tadka (1 Bowl)", calories: 150 },
+  { name: "Mixed Veg Curry", calories: 120 },
+  { name: "Soya Chunks (50g)", calories: 170 },
+  { name: "Oats with Milk", calories: 220 },
+  { name: "Brown Bread (2 slices)", calories: 150 },
+  { name: "Avocado Toast", calories: 250 },
+  { name: "Fruit Salad", calories: 90 },
+  { name: "Greek Salad", calories: 110 },
+  { name: "Broccoli (100g)", calories: 34 },
+];
+
+const NON_VEG_DB = [
+  { name: "Grilled Salmon", calories: 208 },
+  { name: "Boiled Egg (1)", calories: 70 },
+  { name: "Chicken Curry", calories: 240 },
+  { name: "Egg Omelette (2 eggs)", calories: 180 },
+  { name: "Tuna Salad", calories: 190 },
+  { name: "Beef Steak (100g)", calories: 250 },
+  { name: "Lamb Chops", calories: 290 },
+  { name: "Prawns Fry (100g)", calories: 120 },
+  { name: "Turkey Sandwich", calories: 310 },
+  { name: "Grilled Fish", calories: 160 },
 ];
 
 const Diet = () => {
   const [meals, setMeals] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [totalToday, setTotalToday] = useState(0);
   const [manualFood, setManualFood] = useState({ name: "", calories: "" });
-
-  const navigate = useNavigate(); // Initialize navigation
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const today = new Date().toISOString().split("T")[0];
 
@@ -67,109 +58,66 @@ const Diet = () => {
       setMeals(res.data.foods || []);
       setTotalToday(res.data.totalCalories || 0);
     } catch (err) {
-      console.error("Fetch Error:", err);
+      console.log("No log found yet.");
     }
   };
 
   const addFood = async (food) => {
-    if (!user?._id) return alert("Please login again!");
-    if (!food.name || !food.calories)
-      return alert("Fill in name and calories!");
-
+    if (!food.name || !food.calories) return;
     try {
-      const foodData = {
-        name: food.name,
-        calories: Number(food.calories),
-        protein: food.protein || 0,
-        carbs: food.carbs || 0,
-        fat: food.fat || 0,
-      };
-
       const res = await axios.post("http://localhost:5000/api/diet/add", {
         userId: user._id,
         date: today,
-        food: foodData,
+        food: { name: food.name, calories: Number(food.calories) },
       });
-
       setMeals(res.data.foods);
       setTotalToday(res.data.totalCalories);
-      setSearchTerm("");
-      setManualFood({ name: "", calories: "" }); // Reset manual inputs
+      setManualFood({ name: "", calories: "" }); // Clear manual form
     } catch (err) {
-      alert("Failed to add food.");
+      alert("Error adding food");
     }
   };
 
-  const removeFood = async (mealIndex) => {
+  const removeFood = async (index) => {
     try {
       const res = await axios.delete(
-        `http://localhost:5000/api/diet/remove/${user._id}/${today}/${mealIndex}`,
+        `http://localhost:5000/api/diet/remove/${user._id}/${today}/${index}`,
       );
       setMeals(res.data.foods);
       setTotalToday(res.data.totalCalories);
     } catch (err) {
-      alert("Could not remove item");
+      alert("Error removing food");
     }
   };
-
-  const filteredFoods = FOOD_DB.filter(
-    (f) =>
-      f.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      searchTerm !== "",
-  );
 
   return (
     <div className="diet-page">
       <div className="container py-5">
         <div className="row g-4">
           <div className="col-lg-8">
-            <div className="diet-card p-4 shadow-sm bg-white rounded-4 mb-4">
-              <h4 className="fw-bold mb-3">
-                <Search size={20} className="me-2" /> Search & Add
-              </h4>
-              <input
-                type="text"
-                className="form-control form-control-lg mb-2"
-                placeholder="Search food database..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {filteredFoods.map((f, i) => (
-                <div
-                  key={i}
-                  className="p-3 border-bottom d-flex justify-content-between align-items-center bg-light rounded-2 mb-2"
-                  onClick={() => addFood(f)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <span>
-                    {f.name} <b className="text-primary">+{f.calories} kcal</b>
-                  </span>
-                  <button className="btn btn-sm btn-primary">Add</button>
-                </div>
-              ))}
-
-              <hr className="my-4" />
-
-              <h4 className="fw-bold mb-3">
-                <PlusCircle size={20} className="me-2" /> Custom Entry
-              </h4>
+            {/* --- MANUAL ENTRY SECTION (Add Optional) --- */}
+            <div className="diet-card p-4 shadow-sm bg-white rounded-4 mb-4 border">
+              <h5 className="fw-bold mb-3 d-flex align-items-center">
+                <PlusCircle size={20} className="me-2 text-primary" /> Add
+                Custom Food
+              </h5>
               <div className="row g-2">
-                <div className="col-md-7">
+                <div className="col-md-6">
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Food Name"
+                    placeholder="Item Name (e.g. Pasta)"
                     value={manualFood.name}
                     onChange={(e) =>
                       setManualFood({ ...manualFood, name: e.target.value })
                     }
                   />
                 </div>
-                <div className="col-md-3">
+                <div className="col-md-4">
                   <input
                     type="number"
                     className="form-control"
-                    placeholder="kcal"
+                    placeholder="Calories"
                     value={manualFood.calories}
                     onChange={(e) =>
                       setManualFood({ ...manualFood, calories: e.target.value })
@@ -178,7 +126,7 @@ const Diet = () => {
                 </div>
                 <div className="col-md-2">
                   <button
-                    className="btn btn-outline-dark w-100"
+                    className="btn btn-primary w-100 fw-bold"
                     onClick={() => addFood(manualFood)}
                   >
                     ADD
@@ -187,70 +135,121 @@ const Diet = () => {
               </div>
             </div>
 
-            <h4 className="fw-bold mb-3">Kinetic Food Library</h4>
+            {/* --- VEGETARIAN LIST --- */}
+            <div className="d-flex align-items-center mb-3 mt-5">
+              <div className="veg-indicator me-2">
+                <div className="dot"></div>
+              </div>
+              <h4 className="fw-bold mb-0 text-success">
+                Vegetarian Selection
+              </h4>
+            </div>
             <div className="row g-3 mb-5">
-              {FOOD_DB.map((f, i) => (
-                <div key={i} className="col-md-4">
-                  <div className="library-item p-3 border rounded-3 text-center bg-white shadow-sm h-100">
-                    <h6 className="fw-bold">{f.name}</h6>
-                    <p className="text-primary small mb-2">{f.calories} kcal</p>
+              {VEG_DB.map((f, i) => (
+                <div key={i} className="col-md-6">
+                  <div className="food-item-card p-3 d-flex justify-content-between align-items-center shadow-sm">
+                    <div>
+                      <h6 className="mb-1 fw-bold">{f.name}</h6>
+                      <span className="text-muted small">
+                        {f.calories} kcal
+                      </span>
+                    </div>
                     <button
-                      className="btn btn-primary btn-sm w-100"
+                      className="btn btn-veg-add"
                       onClick={() => addFood(f)}
                     >
-                      Add to Log
+                      ADD
                     </button>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* --- THE MAIN SUBMIT BUTTON --- */}
-            <div className="text-center py-4 border-top">
-              <button
-                className="btn btn-success btn-lg px-5 shadow fw-bold"
-                onClick={() => navigate("/dashboard")}
-              >
-                <CheckCircle className="me-2" /> FINISH & SAVE TO DASHBOARD
-              </button>
+            {/* --- NON-VEGETARIAN LIST --- */}
+            <div className="d-flex align-items-center mb-3">
+              <div className="non-veg-indicator me-2">
+                <div className="dot"></div>
+              </div>
+              <h4 className="fw-bold mb-0 text-danger">Non-Veg Selection</h4>
+            </div>
+            <div className="row g-3">
+              {NON_VEG_DB.map((f, i) => (
+                <div key={i} className="col-md-6">
+                  <div className="food-item-card p-3 d-flex justify-content-between align-items-center shadow-sm">
+                    <div>
+                      <h6 className="mb-1 fw-bold">{f.name}</h6>
+                      <span className="text-muted small">
+                        {f.calories} kcal
+                      </span>
+                    </div>
+                    <button
+                      className="btn btn-nonveg-add"
+                      onClick={() => addFood(f)}
+                    >
+                      ADD
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
+          {/* --- SIDEBAR: REVIEW WHAT USER ADDED --- */}
           <div className="col-lg-4">
-            <div
-              className="diet-card p-4 bg-dark text-white rounded-4 sticky-top"
-              style={{ top: "100px" }}
-            >
-              <h1 className="display-2 fw-bold text-primary mb-0">
-                {totalToday}
-              </h1>
-              <p className="text-muted">Total Calories Today</p>
+            <div className="sticky-top" style={{ top: "100px" }}>
+              <div className="diet-card p-4 bg-dark text-white rounded-4 shadow mb-4">
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                  <p className="text-uppercase small tracking-widest opacity-50 mb-0">
+                    Today's Intake
+                  </p>
+                  <Flame size={20} className="text-warning" />
+                </div>
+                <h1 className="display-3 fw-black text-primary mb-1">
+                  {totalToday}
+                </h1>
+                <p className="small opacity-75">Calories Consumed</p>
 
-              <div className="mt-4">
-                <h6 className="border-bottom border-secondary pb-2 mb-3">
-                  Today's Log
+                <hr className="border-secondary my-4" />
+
+                <h6 className="fw-bold mb-3">
+                  Review Added Items ({meals.length})
                 </h6>
-                {meals.length === 0 ? (
-                  <p className="text-muted small">No items added yet.</p>
-                ) : (
-                  meals.map((m, i) => (
-                    <div
-                      key={i}
-                      className="d-flex justify-content-between align-items-center mb-3 p-2 rounded bg-secondary bg-opacity-10"
-                    >
-                      <span className="small">
-                        {m.name} <br />
-                        <b className="text-primary">{m.calories} kcal</b>
-                      </span>
-                      <Trash2
-                        size={18}
-                        className="text-danger"
-                        onClick={() => removeFood(i)}
-                        style={{ cursor: "pointer" }}
-                      />
-                    </div>
-                  ))
-                )}
+                <div
+                  className="meal-log-container"
+                  style={{ maxHeight: "300px", overflowY: "auto" }}
+                >
+                  {meals.length === 0 ? (
+                    <p className="text-muted small italic">
+                      Your plate is empty...
+                    </p>
+                  ) : (
+                    meals.map((m, i) => (
+                      <div
+                        key={i}
+                        className="log-item d-flex justify-content-between align-items-center mb-2 p-2 rounded bg-secondary bg-opacity-10"
+                      >
+                        <div className="flex-grow-1">
+                          <div className="small fw-bold">{m.name}</div>
+                          <div className="text-primary tiny-text">
+                            {m.calories} kcal
+                          </div>
+                        </div>
+                        <Trash2
+                          size={16}
+                          className="text-danger pointer"
+                          onClick={() => removeFood(i)}
+                        />
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <button
+                  className="btn btn-primary w-100 mt-4 py-2 fw-bold rounded-pill"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  <CheckCircle size={18} className="me-2" /> FINISH LOGGING
+                </button>
               </div>
             </div>
           </div>

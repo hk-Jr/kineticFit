@@ -2,9 +2,10 @@ import React, { useRef, useEffect, useState } from "react";
 import { Pose } from "@mediapipe/pose";
 import * as cam from "@mediapipe/camera_utils";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import axios from "axios"; // Ensure axios is imported
+import { ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
+import axios from "axios";
 import "./Exercise.css";
+import { ExerciseEngines } from "./ExerciseLogic";
 
 const Exercise = () => {
   const videoRef = useRef(null);
@@ -13,34 +14,25 @@ const Exercise = () => {
   const navigate = useNavigate();
 
   const [counter, setCounter] = useState(0);
-  const [stage, setStage] = useState("up");
-  const [exercise, setExercise] = useState("squat");
+  const [stage, setStage] = useState("down");
+  const [exercise, setExercise] = useState("bicep_curl");
+  const [isCorrectOrientation, setIsCorrectOrientation] = useState(true);
+  const [goal, setGoal] = useState(10);
 
-  // Get user and date for saving
   const user = JSON.parse(localStorage.getItem("user"));
   const today = new Date().toISOString().split("T")[0];
 
-  const calculateAngle = (p1, p2, p3) => {
-    const radians =
-      Math.atan2(p3.y - p2.y, p3.x - p2.x) -
-      Math.atan2(p1.y - p2.y, p1.x - p2.x);
-    let angle = Math.abs((radians * 180.0) / Math.PI);
-    if (angle > 180.0) angle = 360 - angle;
-    return angle;
-  };
-
-  // --- NEW: HANDLE EXIT AND SAVE ---
   const handleExit = async () => {
     if (counter > 0 && user?._id) {
       try {
+        const engine = ExerciseEngines[exercise];
         await axios.post("http://localhost:5000/api/workout/save", {
           userId: user._id,
           date: today,
           type: exercise,
           reps: counter,
-          caloriesBurned: counter * 0.5,
+          caloriesBurned: (counter * engine.caloriesPerRep).toFixed(1),
         });
-        console.log("Workout saved successfully!");
       } catch (err) {
         console.error("Failed to save workout", err);
       }
@@ -66,9 +58,7 @@ const Exercise = () => {
     if (videoRef.current) {
       cameraRef.current = new cam.Camera(videoRef.current, {
         onFrame: async () => {
-          if (videoRef.current) {
-            await pose.send({ image: videoRef.current });
-          }
+          if (videoRef.current) await pose.send({ image: videoRef.current });
         },
         width: 640,
         height: 480,
@@ -78,9 +68,6 @@ const Exercise = () => {
 
     return () => {
       if (cameraRef.current) cameraRef.current.stop();
-      if (videoRef.current && videoRef.current.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-      }
       pose.close();
     };
   }, [exercise]);
@@ -88,125 +75,129 @@ const Exercise = () => {
   const onResults = (results) => {
     if (!results.poseLandmarks || !canvasRef.current) return;
     const canvasCtx = canvasRef.current.getContext("2d");
+    const { width, height } = canvasRef.current;
+
     canvasCtx.save();
-    canvasCtx.clearRect(
-      0,
-      0,
-      canvasRef.current.width,
-      canvasRef.current.height,
-    );
-    canvasCtx.drawImage(
-      results.image,
-      0,
-      0,
-      canvasRef.current.width,
-      canvasRef.current.height,
-    );
+    canvasCtx.clearRect(0, 0, width, height);
+    canvasCtx.drawImage(results.image, 0, 0, width, height);
 
     const landmarks = results.poseLandmarks;
+    const engine = ExerciseEngines[exercise];
 
-    try {
-      if (exercise === "squat") {
-        const kneeAngle = calculateAngle(
-          landmarks[24],
-          landmarks[26],
-          landmarks[28],
-        );
-        if (kneeAngle < 110) setStage("down");
-        if (kneeAngle > 160 && stage === "down") {
-          setStage("up");
-          setCounter((prev) => prev + 1);
-        }
-      } else if (exercise === "pushup") {
-        const elbowAngle = calculateAngle(
-          landmarks[12],
-          landmarks[14],
-          landmarks[16],
-        );
-        if (elbowAngle < 90) setStage("down");
-        if (elbowAngle > 160 && stage === "down") {
-          setStage("up");
-          setCounter((prev) => prev + 1);
-        }
-      }
-    } catch (err) {}
+    const oriented = engine.checkOrientation(landmarks);
+    setIsCorrectOrientation(oriented);
+
+    if (oriented) {
+      const { newStage, repIncrement } = engine.evaluateForm(landmarks, stage);
+      if (newStage !== stage) setStage(newStage);
+      if (repIncrement) setCounter((prev) => prev + 1);
+    }
+
     canvasCtx.restore();
   };
 
   return (
     <div className="exercise-container py-4">
       <div className="container">
-        <div className="d-flex justify-content-between align-items-center mb-4 bg-dark p-3 rounded-4 shadow text-white">
+        {/* Header Bar */}
+        <div className="d-flex justify-content-between align-items-center mb-4 bg-dark p-3 rounded-4 text-white shadow">
           <button
             className="btn btn-outline-light btn-sm px-3"
-            onClick={handleExit} // Changed from navigate to handleExit
+            onClick={handleExit}
           >
             <ArrowLeft size={18} className="me-2" /> Exit Gym
           </button>
+
           <div className="text-center">
-            <h5 className="mb-0 fw-bold">Kinetic AI Vision</h5>
-            <small className="text-primary fw-bold">Active Tracking</small>
+            <h5 className="mb-0 fw-bold">
+              TOTAL REPS:{" "}
+              <span className="text-primary">
+                {counter} / {goal}
+              </span>
+            </h5>
+            {counter >= goal && (
+              <small className="text-success">
+                <CheckCircle size={14} /> Goal Reached!
+              </small>
+            )}
           </div>
-          <div className="badge bg-primary px-3 py-2">
-            {exercise.toUpperCase()}
+
+          <div className="badge bg-primary px-3 py-2 text-uppercase">
+            {ExerciseEngines[exercise].name}
           </div>
         </div>
 
-        <div className="d-flex justify-content-center gap-3 mb-4">
-          <button
-            className={`btn rounded-pill px-4 ${exercise === "squat" ? "btn-primary shadow" : "btn-outline-dark"}`}
-            onClick={() => {
-              setExercise("squat");
-              setCounter(0);
-              setStage("up");
-            }}
-          >
-            Squats
-          </button>
-          <button
-            className={`btn rounded-pill px-4 ${exercise === "pushup" ? "btn-primary shadow" : "btn-outline-dark"}`}
-            onClick={() => {
-              setExercise("pushup");
-              setCounter(0);
-              setStage("up");
-            }}
-          >
-            Push-ups
-          </button>
+        {/* Selection Tabs */}
+        <div className="d-flex justify-content-center gap-2 mb-4 flex-wrap">
+          {Object.keys(ExerciseEngines).map((key) => (
+            <button
+              key={key}
+              className={`btn btn-sm rounded-pill px-4 ${exercise === key ? "btn-primary" : "btn-outline-dark"}`}
+              onClick={() => {
+                setExercise(key);
+                setCounter(0);
+                setStage("down");
+              }}
+            >
+              {ExerciseEngines[key].name}
+            </button>
+          ))}
         </div>
 
+        {/* Camera View */}
         <div className="video-wrapper shadow-lg rounded-4 overflow-hidden border border-4 border-dark bg-black">
-          <video ref={videoRef} className="d-none" playsInline />
+          <video ref={videoRef} className="d-none" />
           <canvas
             ref={canvasRef}
             width="640"
             height="480"
             className="w-100 h-auto"
           />
+
+          {!isCorrectOrientation && (
+            <div className="orientation-alert-overlay">
+              <div className="alert-box">
+                <AlertCircle size={48} className="text-warning mb-3" />
+                <h4 className="fw-bold text-white">PROFILE VIEW REQUIRED</h4>
+                <p className="text-white-50">Turn 90° sideways to camera</p>
+              </div>
+            </div>
+          )}
+
           <div className="rep-counter-overlay">
             <span className="fw-black">{counter}</span>
             <p>REPS</p>
           </div>
+
           <div
-            className={`stage-indicator ${stage === "down" ? "bg-success border-success" : ""}`}
+            className={`stage-indicator ${stage === "up" ? "bg-success" : "bg-primary"}`}
           >
-            {stage === "down" ? "↑ PUSH UP" : "↓ GET LOW"}
+            {ExerciseEngines[exercise].instructions[stage]}
           </div>
         </div>
 
+        {/* Stats & Goal Settings */}
         <div className="mt-4 row g-3 text-center">
-          <div className="col-6">
+          <div className="col-md-4">
             <div className="p-3 bg-white rounded-4 shadow-sm">
-              <span className="text-muted d-block small">Accuracy</span>
-              <span className="h4 fw-bold text-success">Form Validated</span>
+              <span className="text-muted d-block small">Calories</span>
+              <span className="fw-bold text-primary">
+                {(counter * ExerciseEngines[exercise].caloriesPerRep).toFixed(
+                  1,
+                )}{" "}
+                kcal
+              </span>
             </div>
           </div>
-          <div className="col-6">
-            <div className="p-3 bg-white rounded-4 shadow-sm">
-              <span className="text-muted d-block small">Calories Burned</span>
-              <span className="h4 fw-bold text-primary">
-                {(counter * 0.5).toFixed(1)} kcal
-              </span>
+          <div className="col-md-8">
+            <div className="p-3 bg-white rounded-4 shadow-sm d-flex align-items-center justify-content-center">
+              <span className="text-muted me-3">Adjust Target Reps:</span>
+              <input
+                type="number"
+                className="form-control w-25 text-center fw-bold"
+                value={goal}
+                onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
+              />
             </div>
           </div>
         </div>

@@ -11,8 +11,17 @@ const Dashboard = () => {
   const [totalToday, setTotalToday] = useState(0);
   const [activityData, setActivityData] = useState([]);
   const navigate = useNavigate();
+
+  // FIX: Use local date (YYYY-MM-DD) instead of UTC to avoid timezone shifts
+  const getLocalDateString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const todayStr = getLocalDateString(today);
 
   useEffect(() => {
     const loggedInUser = JSON.parse(localStorage.getItem("user"));
@@ -41,40 +50,36 @@ const Dashboard = () => {
       const res = await axios.get(
         `http://localhost:5000/api/auth/activity/${userId}`,
       );
-      setActivityData(res.data);
+      // Ensure res.data is an array. Backend should return: [{ date: '2025-05-18', count: 1 }]
+      setActivityData(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      // Fallback: If backend route isn't ready, show today as active
+      // Fallback: If backend fails, manually show today as active so it turns green
       setActivityData([{ date: todayStr, count: 1 }]);
     }
   };
 
-  //cals streak
   const calculateStreak = (data) => {
     if (!data || data.length === 0) return 0;
 
-    // Sort dates descending (newest first)
-    const sortedDates = data
-      .map((d) => d.date)
-      .sort((a, b) => new Date(b) - new Date(a));
-
+    const loggedDates = new Set(data.map((d) => d.date));
     let streak = 0;
-    let currentDate = new Date(); // Start from today
+    let checkDate = new Date(); // Start checking from today backwards
 
-    // Clean date to YYYY-MM-DD for comparison
-    const formatDate = (d) => d.toISOString().split("T")[0];
-
-    for (let i = 0; i < sortedDates.length; i++) {
-      const todayStr = formatDate(currentDate);
-
-      if (sortedDates.includes(todayStr)) {
+    while (true) {
+      const dateStr = getLocalDateString(checkDate);
+      if (loggedDates.has(dateStr)) {
         streak++;
-        currentDate.setDate(currentDate.getDate() - 1); // Move to yesterday
+        checkDate.setDate(checkDate.getDate() - 1);
       } else {
-        // If today is missing, check if they at least logged yesterday
+        // If today hasn't been logged yet, check if yesterday was logged to keep the streak alive
         if (streak === 0) {
-          currentDate.setDate(currentDate.getDate() - 1);
-          const yesterdayStr = formatDate(currentDate);
-          if (sortedDates.includes(yesterdayStr)) continue;
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayStr = getLocalDateString(yesterday);
+          if (loggedDates.has(yesterdayStr)) {
+            checkDate = yesterday;
+            continue;
+          }
         }
         break;
       }
@@ -84,11 +89,9 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* --- HERO SECTION (Profile & Heatmap) --- */}
       <div className="dashboard-hero bg-dark text-white py-5 mb-4">
         <div className="container">
           <div className="row align-items-center">
-            {/* Profile Info */}
             <div className="col-lg-4 mb-4 mb-lg-0 border-end border-secondary">
               <div className="d-flex align-items-center gap-3 mb-3">
                 <div className="profile-avatar bg-primary rounded-circle d-flex align-items-center justify-content-center">
@@ -107,35 +110,26 @@ const Dashboard = () => {
               >
                 <Edit3 size={14} className="me-2" /> Update Profile
               </button>
-              <div className="mt-3 d-flex gap-3 text-muted small">
-                <span>W: {user?.weight || "--"}kg</span>
-                <span>H: {user?.height || "--"}cm</span>
-                <span>Age: {user?.age || "--"}</span>
-              </div>
             </div>
 
-            {/* Heatmap Section */}
             <div className="col-lg-8 ps-lg-5">
-              {/* <div className="d-flex justify-content-between align-items-center mb-3">
-                <h6 className="text-uppercase fw-bold text-primary mb-0 small">
-                  Activity Streak
-                </h6>
-                <div className="streak-badge-mini">
-                  <Zap size={14} fill="#ffbc00" color="#ffbc00" />
-                  <span className="ms-1">Streak: 4 days</span>
-                </div>
-              </div> */}
-              <div className="streak-badge mt-2">
+              <div className="streak-display mb-2">
                 <Zap
-                  size={18}
-                  fill={calculateStreak(activityData) > 0 ? "#ffbc00" : "#ccc"}
-                  color={calculateStreak(activityData) > 0 ? "#ffbc00" : "#ccc"}
+                  size={20}
+                  fill={calculateStreak(activityData) > 0 ? "#ffbc00" : "none"}
+                  color={calculateStreak(activityData) > 0 ? "#ffbc00" : "#666"}
                 />
-                <span>
-                  Current Streak: {calculateStreak(activityData)} days
+                <span
+                  className="ms-2 fw-bold text-uppercase tracking-wider"
+                  style={{ fontSize: "13px" }}
+                >
+                  Current Streak:{" "}
+                  <span className="text-primary">
+                    {calculateStreak(activityData)} Days
+                  </span>
                 </span>
               </div>
-              <div className="heatmap-wrapper bg-white p-3 rounded-4 shadow-sm">
+              <div className="heatmap-wrapper bg-white p-3 rounded-4 shadow-sm border">
                 <CalendarHeatmap
                   startDate={
                     new Date(new Date().setFullYear(today.getFullYear() - 1))
@@ -144,8 +138,14 @@ const Dashboard = () => {
                   values={activityData}
                   classForValue={(value) => {
                     if (!value || value.count === 0) return "color-empty";
-                    return "color-scale-green";
+                    return "color-filled-green"; // Specific class name
                   }}
+                  tooltipDataAttrs={(value) => ({
+                    "data-tip":
+                      value && value.date
+                        ? `${value.date}: Logged In`
+                        : "No Activity",
+                  })}
                 />
               </div>
             </div>
@@ -154,7 +154,7 @@ const Dashboard = () => {
       </div>
 
       <div className="container py-2">
-        {/* Welcome Header / Quick Stats */}
+        {/* Welcome Header */}
         <div className="welcome-box p-4 mb-4 d-flex justify-content-between align-items-center">
           <div>
             <h4 className="fw-bold text-white mb-1">Daily Overview</h4>
@@ -162,7 +162,6 @@ const Dashboard = () => {
               Keep pushing toward your {user?.fitnessGoal} goal!
             </p>
           </div>
-
           <div className="summary-card-mini text-center text-white">
             <h6 className="text-uppercase tiny-text mb-1">Today's Fuel</h6>
             <div className="progress-circle-mini">
@@ -197,42 +196,6 @@ const Dashboard = () => {
               <h3>Track Diet</h3>
               <p>Log your meals and maintain your macro precision.</p>
               <button className="btn-action">Open Kitchen</button>
-            </div>
-          </div>
-        </div>
-
-        {/* Detailed Performance Section */}
-        <div className="summary-section mt-5 p-4 bg-white rounded-4 shadow-sm">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h4 className="fw-bold mb-0">Daily Performance</h4>
-            <div className="badge bg-light text-dark border p-2 px-3 rounded-pill">
-              Target: {user?.dailyCalorieTarget || 2500} kcal
-            </div>
-          </div>
-          <div className="row text-center gy-3">
-            <div className="col-md-3 border-end">
-              <span className="d-block text-muted small">Calories Eaten</span>
-              <span className="fw-bold h5 text-primary">{totalToday} kcal</span>
-            </div>
-            <div className="col-md-3 border-end">
-              <span className="d-block text-muted small">Daily Target</span>
-              <span className="fw-bold h5">
-                {user?.dailyCalorieTarget || 2500}
-              </span>
-            </div>
-            <div className="col-md-3 border-end">
-              <span className="d-block text-muted small">Status</span>
-              <span
-                className={`fw-bold h5 ${totalToday > user?.dailyCalorieTarget ? "text-danger" : "text-success"}`}
-              >
-                {totalToday > user?.dailyCalorieTarget
-                  ? "Over Limit"
-                  : "On Track"}
-              </span>
-            </div>
-            <div className="col-md-3">
-              <span className="d-block text-muted small">Avg. Accuracy</span>
-              <span className="fw-bold h5 text-success">94%</span>
             </div>
           </div>
         </div>

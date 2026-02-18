@@ -1,9 +1,41 @@
+/* --- HEATMAP STYLING --- */
+.heatmap-wrapper {
+  overflow: hidden;
+  border: 1px solid #edf2f7;
+}
+
+/* Force colors on the SVG rects */
+.react-calendar-heatmap rect.color-empty {
+  fill: #ebedf0; /* Light grey for empty days */
+}
+
+.react-calendar-heatmap rect.color-filled-green {
+  fill: #22c55e !important; /* Vivid Green for logged-in days */
+  rx: 2; /* Rounded corners for the blocks */
+  ry: 2;
+}
+
+/* Optional: Subtle hover effect on the blocks */
+.react-calendar-heatmap rect:hover {
+  stroke: #333;
+  stroke-width: 1px;
+}
+
+.streak-display {
+  display: flex;
+  align-items: center;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+
+/* --- DASHBOARD UI REFINEMENTS --- */
 .dashboard-container {
   background-color: #f8fafc;
   min-height: 100vh;
 }
 
-/* --- HERO SECTION --- */
 .dashboard-hero {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   border-bottom: 4px solid #3b82f6;
@@ -16,45 +48,11 @@
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
 }
 
-.heatmap-wrapper {
-  overflow: hidden;
-}
-
-/* Heatmap Styling */
-.react-calendar-heatmap .color-empty {
-  fill: #e2e8f0;
-}
-.react-calendar-heatmap .color-scale-green {
-  fill: #22c55e;
-} /* GitHub style green */
-
-.streak-badge-mini {
-  background: rgba(255, 188, 0, 0.1);
-  padding: 4px 12px;
-  border-radius: 50px;
-  color: #f59e0b;
-  font-weight: 700;
-  font-size: 12px;
-}
-
-/* --- ORIGINAL STYLES REFINED --- */
 .welcome-box {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border-radius: 20px;
   color: white;
   box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
-}
-
-.summary-card-mini .progress-circle-mini {
-  background: rgba(255, 255, 255, 0.15);
-  padding: 10px 20px;
-  border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.tiny-text {
-  font-size: 10px;
-  letter-spacing: 1px;
 }
 
 .action-card {
@@ -63,7 +61,7 @@
   border-radius: 24px;
   border: 1px solid #e2e8f0;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
 }
 
 .action-card:hover {
@@ -98,8 +96,4 @@
   font-size: 14px;
   font-weight: 600;
   margin-top: 15px;
-}
-
-.summary-section {
-  border: 1px solid #e2e8f0;
 }
