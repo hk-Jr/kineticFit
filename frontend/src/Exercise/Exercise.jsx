@@ -2,10 +2,17 @@ import React, { useRef, useEffect, useState } from "react";
 import { Pose } from "@mediapipe/pose";
 import * as cam from "@mediapipe/camera_utils";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Play,
+  Info,
+  Flame,
+  UserCheck,
+  AlertCircle,
+} from "lucide-react";
 import axios from "axios";
 import "./Exercise.css";
-import { ExerciseEngines } from "./ExerciseLogic";
+import { AllExercises } from "./Engines";
 
 const Exercise = () => {
   const videoRef = useRef(null);
@@ -13,32 +20,18 @@ const Exercise = () => {
   const cameraRef = useRef(null);
   const navigate = useNavigate();
 
-  const [counter, setCounter] = useState(0);
-  const [stage, setStage] = useState("down");
+  // Logic Ref to ensure strict rep counting
+  const stageRef = useRef("down");
+
   const [exercise, setExercise] = useState("bicep_curl");
-  const [isCorrectOrientation, setIsCorrectOrientation] = useState(true);
-  const [goal, setGoal] = useState(10);
+  const [category, setCategory] = useState("Upper Body");
+  const [counter, setCounter] = useState(0);
+  const [isReady, setIsReady] = useState(true);
+  const [statusMsg, setStatusMsg] = useState("");
+  const [showVideo, setShowVideo] = useState(false);
+  const [showInitialAlert, setShowInitialAlert] = useState(true); // First-time alert
 
-  const user = JSON.parse(localStorage.getItem("user"));
-  const today = new Date().toISOString().split("T")[0];
-
-  const handleExit = async () => {
-    if (counter > 0 && user?._id) {
-      try {
-        const engine = ExerciseEngines[exercise];
-        await axios.post("http://localhost:5000/api/workout/save", {
-          userId: user._id,
-          date: today,
-          type: exercise,
-          reps: counter,
-          caloriesBurned: (counter * engine.caloriesPerRep).toFixed(1),
-        });
-      } catch (err) {
-        console.error("Failed to save workout", err);
-      }
-    }
-    navigate("/dashboard");
-  };
+  const currentEngine = AllExercises[exercise];
 
   useEffect(() => {
     const pose = new Pose({
@@ -53,12 +46,35 @@ const Exercise = () => {
       minTrackingConfidence: 0.6,
     });
 
-    pose.onResults(onResults);
+    pose.onResults((results) => {
+      if (!results.poseLandmarks || !canvasRef.current) return;
+      const canvasCtx = canvasRef.current.getContext("2d");
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, 640, 480);
+      canvasCtx.drawImage(results.image, 0, 0, 640, 480);
+
+      const status = currentEngine.checkStatus(results.poseLandmarks);
+      if (!status.ok) {
+        setIsReady(false);
+        setStatusMsg(status.msg);
+      } else {
+        setIsReady(true);
+        const { newStage, repIncrement } = currentEngine.evaluateForm(
+          results.poseLandmarks,
+          stageRef.current,
+        );
+        if (newStage !== stageRef.current) {
+          stageRef.current = newStage;
+          if (repIncrement) setCounter((prev) => prev + 1);
+        }
+      }
+      canvasCtx.restore();
+    });
 
     if (videoRef.current) {
       cameraRef.current = new cam.Camera(videoRef.current, {
         onFrame: async () => {
-          if (videoRef.current) await pose.send({ image: videoRef.current });
+          await pose.send({ image: videoRef.current });
         },
         width: 640,
         height: 480,
@@ -67,138 +83,127 @@ const Exercise = () => {
     }
 
     return () => {
-      if (cameraRef.current) cameraRef.current.stop();
+      cameraRef.current?.stop();
       pose.close();
     };
   }, [exercise]);
 
-  const onResults = (results) => {
-    if (!results.poseLandmarks || !canvasRef.current) return;
-    const canvasCtx = canvasRef.current.getContext("2d");
-    const { width, height } = canvasRef.current;
-
-    canvasCtx.save();
-    canvasCtx.clearRect(0, 0, width, height);
-    canvasCtx.drawImage(results.image, 0, 0, width, height);
-
-    const landmarks = results.poseLandmarks;
-    const engine = ExerciseEngines[exercise];
-
-    const oriented = engine.checkOrientation(landmarks);
-    setIsCorrectOrientation(oriented);
-
-    if (oriented) {
-      const { newStage, repIncrement } = engine.evaluateForm(landmarks, stage);
-      if (newStage !== stage) setStage(newStage);
-      if (repIncrement) setCounter((prev) => prev + 1);
-    }
-
-    canvasCtx.restore();
-  };
-
   return (
-    <div className="exercise-container py-4">
-      <div className="container">
-        {/* Header Bar */}
-        <div className="d-flex justify-content-between align-items-center mb-4 bg-dark p-3 rounded-4 text-white shadow">
-          <button
-            className="btn btn-outline-light btn-sm px-3"
-            onClick={handleExit}
-          >
-            <ArrowLeft size={18} className="me-2" /> Exit Gym
-          </button>
-
-          <div className="text-center">
-            <h5 className="mb-0 fw-bold">
-              TOTAL REPS:{" "}
-              <span className="text-primary">
-                {counter} / {goal}
-              </span>
-            </h5>
-            {counter >= goal && (
-              <small className="text-success">
-                <CheckCircle size={14} /> Goal Reached!
-              </small>
-            )}
-          </div>
-
-          <div className="badge bg-primary px-3 py-2 text-uppercase">
-            {ExerciseEngines[exercise].name}
-          </div>
-        </div>
-
-        {/* Selection Tabs */}
-        <div className="d-flex justify-content-center gap-2 mb-4 flex-wrap">
-          {Object.keys(ExerciseEngines).map((key) => (
+    <div className="exercise-layout">
+      {/* Safety Alert Modal */}
+      {showInitialAlert && (
+        <div className="setup-overlay">
+          <div className="setup-card">
+            <UserCheck size={48} color="#3b82f6" />
+            <h2>Workout Safety Check</h2>
+            <p>
+              Make sure you are the <strong>only person</strong> on screen for
+              the best tracking accuracy.
+            </p>
             <button
-              key={key}
-              className={`btn btn-sm rounded-pill px-4 ${exercise === key ? "btn-primary" : "btn-outline-dark"}`}
-              onClick={() => {
-                setExercise(key);
-                setCounter(0);
-                setStage("down");
-              }}
+              className="btn-start-now"
+              onClick={() => setShowInitialAlert(false)}
             >
-              {ExerciseEngines[key].name}
+              Got it, let's start!
             </button>
-          ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sidebar - Clean White Theme */}
+      <div className="sidebar">
+        <button className="back-btn" onClick={() => navigate("/dashboard")}>
+          <ArrowLeft size={16} /> Dashboard
+        </button>
+
+        <div className="header-box">
+          <h1>{currentEngine.name}</h1>
+          <button
+            className="video-toggle"
+            onClick={() => setShowVideo(!showVideo)}
+          >
+            {showVideo ? <Info size={18} /> : <Play size={18} />}
+            {showVideo ? "Show Stats" : "Watch Tutorial"}
+          </button>
         </div>
 
-        {/* Camera View */}
-        <div className="video-wrapper shadow-lg rounded-4 overflow-hidden border border-4 border-dark bg-black">
-          <video ref={videoRef} className="d-none" />
-          <canvas
-            ref={canvasRef}
-            width="640"
-            height="480"
-            className="w-100 h-auto"
+        {showVideo ? (
+          <div
+            className="video-player-container"
+            dangerouslySetInnerHTML={{ __html: currentEngine.videoEmbed }}
           />
-
-          {!isCorrectOrientation && (
-            <div className="orientation-alert-overlay">
-              <div className="alert-box">
-                <AlertCircle size={48} className="text-warning mb-3" />
-                <h4 className="fw-bold text-white">PROFILE VIEW REQUIRED</h4>
-                <p className="text-white-50">Turn 90° sideways to camera</p>
+        ) : (
+          <div className="stats-container">
+            <div className="bold-calorie-card">
+              <div className="calorie-icon-circle">
+                <Flame size={24} color="#ef4444" fill="#ef4444" />
               </div>
+              <div className="calorie-details">
+                <span className="calorie-label">TOTAL BURNED</span>
+                <span className="calorie-value">
+                  {(counter * currentEngine.caloriesPerRep).toFixed(1)}{" "}
+                  <small>kcal</small>
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="navigation-selectors">
+          <label className="section-title">CATEGORIES</label>
+          <div className="category-list">
+            {["Upper Body", "Lower Body", "Full Body"].map((cat) => (
+              <button
+                key={cat}
+                className={category === cat ? "active" : ""}
+                onClick={() => setCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <label className="section-title">EXERCISES</label>
+          <div className="exercise-nav">
+            {Object.keys(AllExercises)
+              .filter((k) => AllExercises[k].category === category)
+              .map((key) => (
+                <button
+                  key={key}
+                  className={exercise === key ? "active" : ""}
+                  onClick={() => {
+                    setExercise(key);
+                    setCounter(0);
+                    stageRef.current = "down";
+                  }}
+                >
+                  {AllExercises[key].name}
+                </button>
+              ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Viewport */}
+      <div className="viewport">
+        <div className="camera-box">
+          <canvas ref={canvasRef} width="640" height="480" />
+          <video ref={videoRef} className="d-none" />
+
+          {!isReady && (
+            <div className="compact-alert">
+              <AlertCircle size={18} />
+              <span>{statusMsg}</span>
             </div>
           )}
 
-          <div className="rep-counter-overlay">
-            <span className="fw-black">{counter}</span>
-            <p>REPS</p>
+          <div className="rep-badge">
+            <span className="rep-number">{counter}</span>
+            <span className="rep-unit">REPS</span>
           </div>
 
-          <div
-            className={`stage-indicator ${stage === "up" ? "bg-success" : "bg-primary"}`}
-          >
-            {ExerciseEngines[exercise].instructions[stage]}
-          </div>
-        </div>
-
-        {/* Stats & Goal Settings */}
-        <div className="mt-4 row g-3 text-center">
-          <div className="col-md-4">
-            <div className="p-3 bg-white rounded-4 shadow-sm">
-              <span className="text-muted d-block small">Calories</span>
-              <span className="fw-bold text-primary">
-                {(counter * ExerciseEngines[exercise].caloriesPerRep).toFixed(
-                  1,
-                )}{" "}
-                kcal
-              </span>
-            </div>
-          </div>
-          <div className="col-md-8">
-            <div className="p-3 bg-white rounded-4 shadow-sm d-flex align-items-center justify-content-center">
-              <span className="text-muted me-3">Adjust Target Reps:</span>
-              <input
-                type="number"
-                className="form-control w-25 text-center fw-bold"
-                value={goal}
-                onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
-              />
-            </div>
+          <div className={`instruction-pill ${stageRef.current}`}>
+            {currentEngine.instructions[stageRef.current]}
           </div>
         </div>
       </div>
