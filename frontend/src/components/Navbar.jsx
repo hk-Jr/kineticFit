@@ -24,7 +24,7 @@ const KineticNavbar = () => {
 
           <div className="d-flex align-items-center pe-1">
             <Link to="/login" className="login-btn text-decoration-none me-4">
-              Login <span className="arrow-icon">↗</span>
+              Login <i class="fa-solid fa-arrow-right-to-bracket"></i>
             </Link>
             <Link to="/signup">
               <button className="cta-button">Get Started</button>

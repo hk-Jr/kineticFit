@@ -44,8 +44,8 @@ const Footer = () => {
 
         <div className="footer-bottom border-top py-4 text-center">
           <p className="athlete-tagline">
-            Made with <span className="heart">❤️</span> by an{" "}
-            <strong>ATHLETE TO ATHLETES</strong>.
+            Made with <span className="heart">❤️</span> by{" "}
+            <strong>ATHLETES TO ATHLETES</strong>.
           </p>
           <p className="text-muted small mb-0">
             © 2026 KineticFit AI. All rights reserved.
