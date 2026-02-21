@@ -12,17 +12,22 @@ const app = express();
 // 3. Import Routes
 const authRoute = require("./routes/auth");
 const dietRoute = require("./routes/diet");
-// const exerciseRoute = require("./routes/exercise"); // Future use
+const workoutRoute = require("./routes/workout"); // Ensure this file exists in /routes
 
 // 4. Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // Critical for parsing the 'food' object in diet logs
 
 // 5. Register Routes
+// authRoute now handles /login, /signup, /activity heatmap, and /log-activity
 app.use("/api/auth", authRoute);
+
+// dietRoute handles /add, /remove, and fetching daily logs
 app.use("/api/diet", dietRoute);
 
-app.use("/api/workout", require("./routes/workout"));
+// workoutRoute handles saving exercise sessions
+app.use("/api/workout", workoutRoute);
+
 // 6. MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI)

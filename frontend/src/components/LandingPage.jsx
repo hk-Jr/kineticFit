@@ -15,17 +15,17 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page-root">
-      {/* --- Subtle Background Animations --- */}
-      <div className="bg-animations">
+      {/* --- REFINED BACKGROUND LAYER --- */}
+      <div className="bg-canvas">
+        <div className="subtle-grid"></div>
+        <div className="radial-glow"></div>
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
       </div>
 
-      {/* Hero Section */}
       <section className="hero-section text-center">
         <div className="container position-relative">
-          <div className="version-badge mb-4">SYSTEM V1.0 // LIVE</div>
+          <div className="version-badge mb-4">SYSTEM V1.0 // ACTIVE</div>
 
           <h1 className="hero-main-title fw-black">
             PERFECT FORM. <br />
@@ -71,7 +71,7 @@ const LandingPage = () => {
                 </span>
               </div>
             </div>
-            <p className="biometrics-tag mt-4 pulse-anim">
+            <p className="biometrics-tag mt-4">
               <Activity size={12} className="me-1 icon-blue" /> REAL-TIME LOCAL
               BIOMETRICS
             </p>
@@ -79,7 +79,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Feature Cards Section */}
       <section className="core-features-section py-5">
         <div className="container">
           <h2 className="core-systems-heading fw-black mb-5">CORE SYSTEMS</h2>

@@ -17,28 +17,26 @@ import Goals from "./Goals/Goals";
 
 function App() {
   const location = useLocation();
-  const user = JSON.parse(localStorage.getItem("user"));
 
-  // Logic to determine which navbar to show
+  // FIX: Safety check to handle null or "undefined" strings
+  const storedUser = localStorage.getItem("user");
+  const user =
+    storedUser && storedUser !== "undefined" ? JSON.parse(storedUser) : null;
+
   const isLandingPage = location.pathname === "/";
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
 
   return (
     <>
-      {/* 1. Show the Public Navbar ONLY on landing, and ONLY if NOT logged in */}
       {isLandingPage && !user && <KineticNavbar />}
-
-      {/* 2. Show the Authenticated Navbar ONLY when logged in AND NOT on Landing/Auth pages */}
       {!isLandingPage && !isAuthPage && user && <AuthenticatedNavbar />}
 
       <Routes>
-        {/* --- PUBLIC ROUTES --- */}
         <Route
           path="/"
           element={
             user ? (
-              // If user is already logged in, skip landing page and go to dashboard
               <Navigate to="/dashboard" replace />
             ) : (
               <>
@@ -48,8 +46,6 @@ function App() {
             )
           }
         />
-
-        {/* Prevent logged-in users from accessing Login/Signup */}
         <Route
           path="/login"
           element={user ? <Navigate to="/dashboard" replace /> : <Login />}
@@ -58,8 +54,6 @@ function App() {
           path="/signup"
           element={user ? <Navigate to="/dashboard" replace /> : <SignUp />}
         />
-
-        {/* --- PRIVATE SYSTEM ROUTES --- */}
         <Route
           path="/dashboard"
           element={user ? <Dashboard /> : <Navigate to="/login" replace />}
