@@ -1,18 +1,17 @@
-import { calculateAngle } from "../../utils/math";
-
+// squat.js
 export const squat = {
   name: "Squats",
   category: "Lower Body",
 
   checkStatus: (landmarks) => {
-    // Squats are flexible, but we want the user to be standing initially
     const kneeAngle = calculateAngle(
       landmarks[24],
       landmarks[26],
       landmarks[28],
     );
-    if (kneeAngle < 140)
-      return { ok: false, msg: "START FROM A STANDING POSITION" };
+    // Match this to the 'up' threshold in evaluateForm
+    if (kneeAngle < 160)
+      return { ok: false, msg: "STAND UP STRAIGHT TO START" };
     return { ok: true };
   },
 
@@ -23,9 +22,10 @@ export const squat = {
       landmarks[28],
     );
 
-    // Depth: Knee angle < 100 degrees
+    // Threshold for the bottom of the squat
     if (kneeAngle < 100) return { newStage: "down", repIncrement: false };
-    // Stand up: Knee angle > 160 degrees
+
+    // Threshold to complete the rep
     if (kneeAngle > 160 && stage === "down")
       return { newStage: "up", repIncrement: true };
 

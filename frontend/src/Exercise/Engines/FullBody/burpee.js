@@ -1,9 +1,12 @@
+// burpee.js
 export const burpee = {
   name: "Burpees",
   category: "Full Body",
+  // YouTube Tutorial: Perfect Burpee Form
+  videoEmbed: `<iframe src="https://www.youtube.com/embed/xQdyIrSSFnE" title="How to do Burpees" allowfullscreen></iframe>`,
 
   checkStatus: (landmarks) => {
-    return { ok: true }; // Burpees involve constant movement, no fixed start
+    return { ok: true };
   },
 
   evaluateForm: (landmarks, stage) => {
@@ -11,10 +14,8 @@ export const burpee = {
     const hipY = landmarks[24].y;
     const isHorizontal = Math.abs(shoulderY - hipY) < 0.15;
 
-    // Stage 1: On floor (Plank)
     if (isHorizontal) return { newStage: "floor", repIncrement: false };
 
-    // Stage 2: Standing up from floor
     if (!isHorizontal && shoulderY < 0.4 && stage === "floor") {
       return { newStage: "standing", repIncrement: true };
     }
@@ -23,5 +24,10 @@ export const burpee = {
   },
 
   instructions: { floor: "JUMP UP!", standing: "DROP TO FLOOR" },
+  user_tips: [
+    "Drop into a squat and place hands firmly on the floor",
+    "Jump feet back into a strong plank (no sagging hips)",
+    "Jump feet forward and explode into a vertical jump",
+  ],
   caloriesPerRep: 1.2,
 };

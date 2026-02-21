@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, Utensils, Zap, TrendingUp } from "lucide-react";
+import { Dumbbell, Utensils, Zap, TrendingUp, History } from "lucide-react"; // Added History icon
 import axios from "axios";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
@@ -11,6 +11,7 @@ const Dashboard = () => {
   const [totalToday, setTotalToday] = useState(0);
   const [totalYesterday, setTotalYesterday] = useState(0);
   const [todayFoods, setTodayFoods] = useState([]);
+  const [recentWorkouts, setRecentWorkouts] = useState([]); // New State for Workouts
   const [activityData, setActivityData] = useState([]);
   const navigate = useNavigate();
 
@@ -18,7 +19,6 @@ const Dashboard = () => {
   const todayStr = getLocalDateString(new Date());
 
   useEffect(() => {
-    // FIX: Re-verify user exists before parsing to avoid "undefined" error
     const storedUser = localStorage.getItem("user");
     if (!storedUser || storedUser === "undefined") {
       navigate("/login");
@@ -41,16 +41,27 @@ const Dashboard = () => {
       yesterdayDate.setDate(yesterdayDate.getDate() - 1);
       const yesterdayStr = getLocalDateString(yesterdayDate);
 
-      const [tDiet, yDiet, activity] = await Promise.all([
+      // Added Workout API call to the Promise.all
+      const [tDiet, yDiet, activity, workouts] = await Promise.all([
         axios.get(`http://localhost:5000/api/diet/${userId}/${todayStr}`),
         axios.get(`http://localhost:5000/api/diet/${userId}/${yesterdayStr}`),
         axios.get(`http://localhost:5000/api/auth/activity/${userId}`),
+        axios.get(`http://localhost:5000/api/workout/history?userId=${userId}`),
       ]);
 
       setTotalToday(tDiet.data.totalCalories || 0);
       setTodayFoods(tDiet.data.foods || []);
       setTotalYesterday(yDiet.data.totalCalories || 0);
       setActivityData(Array.isArray(activity.data) ? activity.data : []);
+
+      // Filter workouts for today to match Diet card logic
+      const filteredWorkouts = (workouts.data || []).filter((w) => {
+        const wDate = w.createdAt
+          ? getLocalDateString(new Date(w.createdAt))
+          : w.date;
+        return wDate === todayStr;
+      });
+      setRecentWorkouts(filteredWorkouts);
 
       await axios.post(`http://localhost:5000/api/auth/log-activity/${userId}`);
     } catch (err) {
@@ -121,7 +132,7 @@ const Dashboard = () => {
 
       <div className="container content-lift">
         <div className="row g-4 pb-5">
-          {/* Workout Card - Added d-flex flex-column h-100 for symmetry */}
+          {/* Workout Card - Now Dynamic */}
           <div className="col-md-6">
             <div
               className="feature-card-premium h-100 d-flex flex-column"
@@ -134,16 +145,31 @@ const Dashboard = () => {
                 <span className="tag">WORKOUTS</span>
               </div>
               <h4 className="fw-bold">Exercise</h4>
-              <p className="text-muted small mb-4">
-                AI-powered tracking & rep counting for precision training.
-              </p>
+
+              <div className="mini-log-list mt-2 mb-4">
+                {recentWorkouts.length > 0 ? (
+                  recentWorkouts.slice(-3).map((w, i) => (
+                    <div className="mini-log-item" key={i}>
+                      <span className="food-name">
+                        {w.exerciseName || w.type}
+                      </span>
+                      <span className="workout-val">{w.reps} reps</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-muted small py-2">
+                    No sessions today. Let's move!
+                  </div>
+                )}
+              </div>
+
               <div className="mt-auto">
                 <button className="btn-action-primary">Start Training</button>
               </div>
             </div>
           </div>
 
-          {/* Diet Card - Added d-flex flex-column h-100 for symmetry */}
+          {/* Diet Card */}
           <div className="col-md-6">
             <div
               className="feature-card-premium h-100 d-flex flex-column"

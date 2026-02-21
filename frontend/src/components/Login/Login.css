@@ -1,50 +1,74 @@
-.auth-container {
-  height: 100vh;
+/* Shared Auth & Exercise Background Styling */
+
+.auth-container,
+.exercise-page-root {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f8fafc;
+  position: relative;
+  overflow: hidden;
+  background-color: #ffffff;
+
+  /* THE BIG 50px GRID */
+  background-image:
+    linear-gradient(to right, rgba(0, 86, 179, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 86, 179, 0.08) 1px, transparent 1px);
+  background-size: 50px 50px;
 }
 
-.auth-card {
-  background: white;
+/* THE LIGHT BLUE GRADIENT (Blob) */
+.auth-container::before,
+.exercise-page-root::before {
+  content: "";
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(
+    circle,
+    rgba(0, 123, 255, 0.1) 0%,
+    transparent 70%
+  );
+  top: -200px;
+  right: -10%;
+  filter: blur(100px);
+  z-index: 0; /* Behind the card */
+  pointer-events: none;
+}
+
+/* THE BOX (Card) */
+.auth-card,
+.exercise-card {
+  background: #ffffff;
   padding: 40px;
-  border-radius: 24px;
+  border-radius: 28px;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-  border: 1px solid #eef2f6;
+  max-width: 480px;
+  position: relative;
+  z-index: 10; /* Above the gradient */
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
 }
 
-.brand-logo {
-  font-weight: 800;
-}
-.brand-logo span {
-  color: #007bff;
-}
-
-.custom-input {
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
-  background-color: #fcfdfe;
-}
-
-.btn-auth-main {
-  background-color: #0d1117;
+/* BUTTON RESPONSIVENESS */
+.btn-auth-main,
+.btn-exercise-start {
+  background: #0f172a;
   color: white;
   border: none;
-  padding: 12px;
-  border-radius: 12px;
-  font-weight: 600;
-  transition: 0.2s;
+  padding: 16px;
+  border-radius: 14px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-auth-main:active,
+.btn-exercise-start:active {
+  transform: scale(0.95); /* Responsive click animation */
 }
 
 .btn-auth-main:hover {
-  background-color: #000;
-}
-.blue-link {
-  color: #007bff;
-  text-decoration: none;
-  font-weight: 600;
+  background: #1e293b;
+  transform: translateY(-2px);
 }

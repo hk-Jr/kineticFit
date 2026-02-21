@@ -280,3 +280,53 @@
   cursor: pointer;
   margin-top: 20px;
 }
+/* src/components/Exercise/Exercise.css */
+
+/* 1. WRAPPER: Responsive container that forces a 16:9 shape */
+.video-player-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* This forces a 16:9 Aspect Ratio (9 / 16 = 0.5625) */
+  margin-top: 20px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* 2. IFRAME: Absolute position to fill that forced wrapper */
+.video-player-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  border: none;
+}
+
+/* 3. MOBILE RESPONSIVENESS: Stack sidebar under camera on phones */
+@media (max-width: 768px) {
+  .exercise-layout {
+    flex-direction: column; /* Stack vertically */
+    overflow-y: auto;
+  }
+
+  .sidebar {
+    width: 100%; /* Take full width on phone */
+    height: auto;
+    border-right: none;
+    border-top: 1px solid #e2e8f0;
+    padding: 20px;
+  }
+
+  .viewport {
+    height: 50vh; /* Give camera half the screen */
+    padding: 10px;
+  }
+
+  .camera-box {
+    max-width: 100%;
+    border-radius: 15px;
+  }
+}

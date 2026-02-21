@@ -1,6 +1,9 @@
+// plank_jack.js
 export const plank_jack = {
   name: "Plank Jacks",
   category: "Full Body",
+  // YouTube Tutorial: Plank Jacks Guide
+  videoEmbed: `<iframe src="https://www.youtube.com/embed/cYsxfLckmPg" title="Plank Jacks Form" allowfullscreen></iframe>`,
 
   checkStatus: (landmarks) => {
     const isHorizontal = Math.abs(landmarks[12].y - landmarks[24].y) < 0.15;
@@ -18,5 +21,10 @@ export const plank_jack = {
   },
 
   instructions: { narrow: "JUMP FEET OUT", wide: "JUMP FEET IN" },
+  user_tips: [
+    "Maintain a solid high plank position",
+    "Keep your upper body still as you jump feet apart",
+    "Avoid letting your hips bounce up and down",
+  ],
   caloriesPerRep: 0.4,
 };

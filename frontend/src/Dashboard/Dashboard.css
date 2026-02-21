@@ -153,3 +153,19 @@
   font-size: 10px;
   font-weight: 800;
 }
+
+/* ... Keep all existing Dashboard.css code exactly as it is ... */
+
+/* Added Workout Stat Styling */
+.workout-val {
+  color: #3b82f6; /* Matching the blue theme of the workout card */
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* Optional: if you want a subtle icon in the list like the previous design */
+.mini-log-item .food-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
