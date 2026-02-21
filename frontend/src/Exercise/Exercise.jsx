@@ -9,6 +9,7 @@ import {
   Flame,
   UserCheck,
   AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 import axios from "axios";
 import "./Exercise.css";
@@ -29,9 +30,47 @@ const Exercise = () => {
   const [isReady, setIsReady] = useState(true);
   const [statusMsg, setStatusMsg] = useState("");
   const [showVideo, setShowVideo] = useState(false);
-  const [showInitialAlert, setShowInitialAlert] = useState(true); // First-time alert
+  const [showInitialAlert, setShowInitialAlert] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const currentEngine = AllExercises[exercise];
+
+  // --- NEW LOGIC: Save Workout ---
+  const handleFinishWorkout = async () => {
+    if (counter === 0) {
+      alert("Please complete at least one rep before saving.");
+      return;
+    }
+
+    const confirmSave = window.confirm(
+      "Are you sure you want to finish and save this workout?",
+    );
+    if (!confirmSave) return;
+
+    setIsSaving(true);
+    try {
+      const workoutData = {
+        exerciseName: currentEngine.name,
+        reps: counter,
+        caloriesBurned: (counter * currentEngine.caloriesPerRep).toFixed(1),
+        // If you have a logged-in user, pass the ID here
+        userId: "guest_user",
+      };
+
+      // API call to your backend
+      await axios.post("http://localhost:5000/api/workout/save", workoutData);
+
+      alert("Workout saved successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error saving workout:", error);
+      alert(
+        "Failed to save workout. Please ensure your backend server is running.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     const pose = new Pose({
@@ -90,7 +129,6 @@ const Exercise = () => {
 
   return (
     <div className="exercise-layout">
-      {/* Safety Alert Modal */}
       {showInitialAlert && (
         <div className="setup-overlay">
           <div className="setup-card">
@@ -110,7 +148,6 @@ const Exercise = () => {
         </div>
       )}
 
-      {/* Sidebar - Clean White Theme */}
       <div className="sidebar">
         <button className="back-btn" onClick={() => navigate("/dashboard")}>
           <ArrowLeft size={16} /> Dashboard
@@ -149,6 +186,18 @@ const Exercise = () => {
           </div>
         )}
 
+        {/* NEW: Action Area with Finish Button */}
+        <div className="action-area">
+          <button
+            className="finish-btn"
+            onClick={handleFinishWorkout}
+            disabled={isSaving}
+          >
+            <CheckCircle size={20} />
+            {isSaving ? "Saving..." : "Finish & Save"}
+          </button>
+        </div>
+
         <div className="navigation-selectors">
           <label className="section-title">CATEGORIES</label>
           <div className="category-list">
@@ -184,7 +233,6 @@ const Exercise = () => {
         </div>
       </div>
 
-      {/* Viewport */}
       <div className="viewport">
         <div className="camera-box">
           <canvas ref={canvasRef} width="640" height="480" />

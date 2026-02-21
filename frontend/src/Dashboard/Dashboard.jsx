@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, Utensils, Zap, TrendingUp, History } from "lucide-react"; // Added History icon
+import { Dumbbell, Utensils, Zap, TrendingUp } from "lucide-react";
 import axios from "axios";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
@@ -11,7 +11,7 @@ const Dashboard = () => {
   const [totalToday, setTotalToday] = useState(0);
   const [totalYesterday, setTotalYesterday] = useState(0);
   const [todayFoods, setTodayFoods] = useState([]);
-  const [recentWorkouts, setRecentWorkouts] = useState([]); // New State for Workouts
+  const [recentWorkouts, setRecentWorkouts] = useState([]);
   const [activityData, setActivityData] = useState([]);
   const navigate = useNavigate();
 
@@ -24,13 +24,11 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
-
     try {
       const loggedInUser = JSON.parse(storedUser);
       setUser(loggedInUser);
       fetchAllData(loggedInUser._id);
     } catch (e) {
-      console.error("User parse error", e);
       navigate("/login");
     }
   }, [navigate]);
@@ -41,7 +39,6 @@ const Dashboard = () => {
       yesterdayDate.setDate(yesterdayDate.getDate() - 1);
       const yesterdayStr = getLocalDateString(yesterdayDate);
 
-      // Added Workout API call to the Promise.all
       const [tDiet, yDiet, activity, workouts] = await Promise.all([
         axios.get(`http://localhost:5000/api/diet/${userId}/${todayStr}`),
         axios.get(`http://localhost:5000/api/diet/${userId}/${yesterdayStr}`),
@@ -54,14 +51,18 @@ const Dashboard = () => {
       setTotalYesterday(yDiet.data.totalCalories || 0);
       setActivityData(Array.isArray(activity.data) ? activity.data : []);
 
-      // Filter workouts for today to match Diet card logic
-      const filteredWorkouts = (workouts.data || []).filter((w) => {
+      // WORKOUT LOGIC: Today's sessions or fallback to last 3 from history
+      const allWorkouts = workouts.data || [];
+      const todaySessions = allWorkouts.filter((w) => {
         const wDate = w.createdAt
           ? getLocalDateString(new Date(w.createdAt))
           : w.date;
         return wDate === todayStr;
       });
-      setRecentWorkouts(filteredWorkouts);
+
+      setRecentWorkouts(
+        todaySessions.length > 0 ? todaySessions : allWorkouts.slice(0, 3),
+      );
 
       await axios.post(`http://localhost:5000/api/auth/log-activity/${userId}`);
     } catch (err) {
@@ -88,7 +89,6 @@ const Dashboard = () => {
                 <span className="badge-elite">KINETIC ELITE</span>
               </div>
             </div>
-
             <div className="col-md-6 d-flex justify-content-md-end mt-3 mt-md-0">
               <div className="hero-insight-panel">
                 <div className="insight-item">
@@ -108,7 +108,6 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-
           <div className="heatmap-container-premium">
             <div className="d-flex justify-content-between align-items-center mb-3 px-1">
               <span className="text-muted small fw-bold tracking-wider">
@@ -132,7 +131,7 @@ const Dashboard = () => {
 
       <div className="container content-lift">
         <div className="row g-4 pb-5">
-          {/* Workout Card - Now Dynamic */}
+          {/* UPDATED EXERCISE CARD */}
           <div className="col-md-6">
             <div
               className="feature-card-premium h-100 d-flex flex-column"
@@ -142,34 +141,49 @@ const Dashboard = () => {
                 <div className="icon-box bg-blue">
                   <Dumbbell color="white" size={20} />
                 </div>
-                <span className="tag">WORKOUTS</span>
+                <span className="tag">
+                  {recentWorkouts.some(
+                    (w) =>
+                      getLocalDateString(new Date(w.createdAt)) === todayStr,
+                  )
+                    ? "TODAY'S SESSIONS"
+                    : "RECENT HISTORY"}
+                </span>
               </div>
               <h4 className="fw-bold">Exercise</h4>
 
               <div className="mini-log-list mt-2 mb-4">
                 {recentWorkouts.length > 0 ? (
-                  recentWorkouts.slice(-3).map((w, i) => (
+                  recentWorkouts.map((w, i) => (
                     <div className="mini-log-item" key={i}>
-                      <span className="food-name">
-                        {w.exerciseName || w.type}
-                      </span>
+                      <div className="d-flex flex-column">
+                        {/* Logic to handle both naming conventions found in your DB */}
+                        <span className="food-name">
+                          {w.exerciseName || w.type || "Workout"}
+                        </span>
+                        {getLocalDateString(new Date(w.createdAt)) !==
+                          todayStr && (
+                          <span className="history-date">
+                            {new Date(w.createdAt).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
                       <span className="workout-val">{w.reps} reps</span>
                     </div>
                   ))
                 ) : (
                   <div className="text-muted small py-2">
-                    No sessions today. Let's move!
+                    No sessions found. Let's move!
                   </div>
                 )}
               </div>
-
               <div className="mt-auto">
                 <button className="btn-action-primary">Start Training</button>
               </div>
             </div>
           </div>
 
-          {/* Diet Card */}
+          {/* DIET CARD */}
           <div className="col-md-6">
             <div
               className="feature-card-premium h-100 d-flex flex-column"

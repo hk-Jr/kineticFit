@@ -6,25 +6,26 @@ const Workout = require("../models/Workout");
 router.post("/save", async (req, res) => {
   try {
     const { userId, exerciseName, reps, caloriesBurned } = req.body;
+
     const newWorkout = new Workout({
       userId: userId || "guest_user",
       exerciseName,
       reps,
       caloriesBurned,
-      date: new Date(),
     });
+
     await newWorkout.save();
-    res.status(201).json({ message: "Saved!" });
+    res.status(201).json({ message: "Workout saved successfully!" });
   } catch (err) {
+    console.error("Save Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// 2. GET HISTORY (The Dashboard needs this!)
+// 2. GET HISTORY (For your Dashboard)
 router.get("/history", async (req, res) => {
   try {
     const { userId } = req.query;
-    // Find workouts for this user, sort by newest first
     const history = await Workout.find({ userId: userId || "guest_user" })
       .sort({ createdAt: -1 })
       .limit(10);
