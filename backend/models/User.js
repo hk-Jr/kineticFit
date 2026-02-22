@@ -3,7 +3,15 @@ const mongoose = require("mongoose");
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  // 1. Password is no longer required for Google-only users
+  password: { type: String },
+
+  // 2. Google-specific identifier
+  googleId: { type: String, unique: true, sparse: true },
+
+  // 3. Onboarding tracker
+  isOnboardingComplete: { type: Boolean, default: false },
+
   age: Number,
   weight: Number,
   height: Number,
@@ -11,7 +19,8 @@ const UserSchema = new mongoose.Schema({
     type: String,
     enum: ["Weight Loss", "Muscle Gain", "Maintenance"],
   },
-  // --- NEW TARGET FIELDS ---
+
+  // --- TARGET FIELDS ---
   dailyCalorieTarget: {
     type: Number,
     default: 2000,
@@ -26,7 +35,7 @@ const UserSchema = new mongoose.Schema({
   },
   dailyWaterTarget: {
     type: Number,
-    default: 8, // glasses or liters, depending on your UI
+    default: 8,
   },
   createdAt: { type: Date, default: Date.now },
 });

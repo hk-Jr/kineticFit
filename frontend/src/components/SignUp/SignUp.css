@@ -109,3 +109,27 @@
   border: 1px solid #e2e8f0 !important;
   background-color: #ffffff !important;
 }
+
+/* SignUp.css additions */
+.position-relative hr {
+  border-top: 1px solid #e2e8f0;
+  opacity: 1;
+  margin: 2rem 0;
+}
+
+.blue-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.blue-link:hover {
+  text-decoration: underline;
+}
+
+/* Ensure Google Button is centered */
+.SVELTE_GOOGLE_BUTTON_CONTAINER {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
