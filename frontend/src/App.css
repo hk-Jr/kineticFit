@@ -1,0 +1,24 @@
+/* index.css or App.css */
+:root {
+  --font-main: "Inter", "Google Sans", "Segoe UI", Roboto, sans-serif;
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-main);
+  font-weight: 700;
+  letter-spacing: -0.02em; /* Gives it that tight Google UI look */
+}

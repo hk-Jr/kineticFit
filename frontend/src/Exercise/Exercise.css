@@ -419,3 +419,21 @@
 .sidebar {
   overflow-y: auto;
 }
+
+/* Exercise.css */
+.exercise-layout {
+  display: flex;
+  height: 100vh;
+  background-color: #f8fafc;
+  color: #0f172a;
+  /* Update this line */
+  font-family: var(--font-main);
+  overflow: hidden;
+}
+
+.header-box h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.03em; /* Modern heading style */
+  color: #1e293b;
+}

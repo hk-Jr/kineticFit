@@ -267,3 +267,14 @@
   color: #94a3b8;
   letter-spacing: 0.5px;
 }
+
+/* Dashboard.css */
+.dashboard-container {
+  font-family: var(--font-main);
+}
+
+.insight-item .val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* Makes numbers align perfectly */
+}
